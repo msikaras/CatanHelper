@@ -134,20 +134,22 @@ for r in rarities:
         if abs(r[0] - t[0]) < xDiff and abs(r[1] - t[1]) < yDiff:
             t.append(r[2])
             
+min(tiles, key=len).append(0)
+
 print("______Newest________")
 for t in tiles:
     print(t)
 
 def setup_placements():
-    placement_spots.append(tiles[0][2:])
-    placement_spots.append(tiles[0][2:])
+    placement_spots.append([tiles[0][2:]])
+    placement_spots.append([tiles[0][2:]])
     placement_spots.append([tiles[0][2:], tiles[1][2:]])
-    placement_spots.append(tiles[1][2:])
+    placement_spots.append([tiles[1][2:]])
     placement_spots.append([tiles[1][2:], tiles[2][2:]])
-    placement_spots.append(tiles[2][2:])
-    placement_spots.append(tiles[2][2:])
+    placement_spots.append([tiles[2][2:]])
+    placement_spots.append([tiles[2][2:]])
 
-    placement_spots.append(tiles[3][2:])
+    placement_spots.append([tiles[3][2:]])
     placement_spots.append([tiles[0][2:], tiles[3][2:]])
     placement_spots.append([tiles[0][2:], tiles[3][2:], tiles[4][2:]])
     placement_spots.append([tiles[0][2:], tiles[1][2:], tiles[4][2:]])
@@ -155,9 +157,9 @@ def setup_placements():
     placement_spots.append([tiles[1][2:], tiles[2][2:], tiles[5][2:]])
     placement_spots.append([tiles[2][2:], tiles[5][2:], tiles[6][2:]])
     placement_spots.append([tiles[2][2:], tiles[6][2:]])
-    placement_spots.append(tiles[6][2:])
+    placement_spots.append([tiles[6][2:]])
 
-    placement_spots.append(tiles[7][2:])
+    placement_spots.append([tiles[7][2:]])
     placement_spots.append([tiles[3][2:], tiles[7][2:]])
     placement_spots.append([tiles[3][2:], tiles[7][2:], tiles[8][2:]])
     placement_spots.append([tiles[3][2:], tiles[4][2:], tiles[8][2:]])
@@ -167,9 +169,9 @@ def setup_placements():
     placement_spots.append([tiles[5][2:], tiles[6][2:], tiles[10][2:]])
     placement_spots.append([tiles[6][2:], tiles[10][2:], tiles[11][2:]])
     placement_spots.append([tiles[6][2:], tiles[11][2:]])
-    placement_spots.append(tiles[11][2:])
+    placement_spots.append([tiles[11][2:]])
 
-    placement_spots.append(tiles[7][2:])
+    placement_spots.append([tiles[7][2:]])
     placement_spots.append([tiles[7][2:], tiles[12][2:]])
     placement_spots.append([tiles[7][2:], tiles[8][2:], tiles[12][2:]])
     placement_spots.append([tiles[8][2:], tiles[12][2:], tiles[13][2:]])
@@ -179,9 +181,9 @@ def setup_placements():
     placement_spots.append([tiles[10][2:], tiles[14][2:], tiles[15][2:]])
     placement_spots.append([tiles[10][2:], tiles[11][2:], tiles[15][2:]])
     placement_spots.append([tiles[11][2:], tiles[15][2:]])
-    placement_spots.append(tiles[11][2:])
+    placement_spots.append([tiles[11][2:]])
 
-    placement_spots.append(tiles[12][2:])
+    placement_spots.append([tiles[12][2:]])
     placement_spots.append([tiles[12][2:], tiles[16][2:]])
     placement_spots.append([tiles[12][2:], tiles[13][2:], tiles[16][2:]])
     placement_spots.append([tiles[13][2:], tiles[16][2:], tiles[17][2:]])
@@ -189,15 +191,15 @@ def setup_placements():
     placement_spots.append([tiles[14][2:], tiles[17][2:], tiles[18][2:]])
     placement_spots.append([tiles[14][2:], tiles[15][2:], tiles[18][2:]])
     placement_spots.append([tiles[15][2:], tiles[18][2:]])
-    placement_spots.append(tiles[15][2:])
+    placement_spots.append([tiles[15][2:]])
     
-    placement_spots.append(tiles[16][2:])
-    placement_spots.append(tiles[16][2:])
+    placement_spots.append([tiles[16][2:]])
+    placement_spots.append([tiles[16][2:]])
     placement_spots.append([tiles[16][2:], tiles[17][2:]])
-    placement_spots.append(tiles[17][2:])
+    placement_spots.append([tiles[17][2:]])
     placement_spots.append([tiles[17][2:], tiles[18][2:]])
-    placement_spots.append(tiles[18][2:])
-    placement_spots.append(tiles[18][2:])
+    placement_spots.append([tiles[18][2:]])
+    placement_spots.append([tiles[18][2:]])
 
 
 setup_placements()
@@ -257,10 +259,9 @@ plt.pie(rarity_percentage, labels=labels, colors=colors, startangle=90, autopct=
 
 plt.axis('equal')
 
-plt.show()
+# plt.show()
 
-def rank_by_production:
-    spots = []
+def rank_by_production(type):
     straight_production = []
     scarcity_production = []
 
@@ -270,19 +271,26 @@ def rank_by_production:
         Straight resource production
         Resource production taking into account resource scarcity
     '''
-    # Straight
-    for p in placement_spots:
-        for x in p:
-            print("hi")
-    
-    # Scarcity
-    for p in placement_spots:
-        for x in p:
-            print(x[0] + x[1])
+    if type=="straight":
+        # Straight
+        for p in placement_spots:
+            total_production = 0
+            
+            for x in p:
+                print(x[1])
+                total_production += x[1]
+            
+            straight_production.append(total_production)
+            
+    elif type=="scarcity":
+        # Scarcity
+        for p in placement_spots:
+            for x in p:
+                print()
 
-    return spots
+    return straight_production
 
-rank_by_production()
+print(rank_by_production("straight"))
 
 print("test")
 
