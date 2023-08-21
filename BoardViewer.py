@@ -259,3 +259,30 @@ plt.axis('equal')
 
 plt.show()
 
+def rank_by_production:
+    spots = []
+    straight_production = []
+    scarcity_production = []
+
+    '''
+    Track the resources and values for each placement spot
+    Options to rank by:
+        Straight resource production
+        Resource production taking into account resource scarcity
+    '''
+    # Straight
+    for p in placement_spots:
+        for x in p:
+            print("hi")
+    
+    # Scarcity
+    for p in placement_spots:
+        for x in p:
+            print(x[0] + x[1])
+
+    return spots
+
+rank_by_production()
+
+print("test")
+
