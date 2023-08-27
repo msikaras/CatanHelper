@@ -4,6 +4,8 @@ from array import *
 from operator import itemgetter
 import matplotlib.pyplot as plt
 
+#test
+
 board_path = 'TestBoard.png'
 tree_path = 'TreeNew.png'
 brick_path = 'BrickNew.png'
