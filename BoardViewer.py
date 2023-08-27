@@ -4,7 +4,7 @@ from array import *
 from operator import itemgetter
 import matplotlib.pyplot as plt
 
-board_path = 'BoardNewest.png'
+board_path = 'TestBoard.png'
 tree_path = 'TreeNew.png'
 brick_path = 'BrickNew.png'
 sheep_path = 'SheepNew.png'
@@ -30,7 +30,7 @@ tiles = []
 rarities = []
 placement_spots = []
 rarity_points = [0] * 5
-rarity_odds = [None, None, 1, 2, 3, 4, 5, None, 5, 4, 3, 2, 1, None, None]
+rarity_odds = [0, 0, 1, 2, 3, 4, 5, 0, 5, 4, 3, 2, 1, 0, 0]
 rarity_percentage = [0] * 5
 
 xDiff = 40
@@ -47,9 +47,9 @@ class Tile:
 
 board_img = cv2.imread(board_path, cv2.IMREAD_UNCHANGED)
 
-cv2.imshow('Board', board_img)
-cv2.waitKey()
-cv2.destroyAllWindows()
+#cv2.imshow('Board', board_img)
+#cv2.waitKey()
+#cv2.destroyAllWindows()
 
 # Finds all of the tiles for the material passed as a parameter
 def findTiles(path, label=None):
@@ -213,16 +213,25 @@ print(rarity_points)
 
 for t in tiles:
     if t[2] == "tree":
+        print(t[3])
         rarity_points[0] += rarity_odds[t[3]]
     elif t[2] == "brick":
+        print(t[3])
         rarity_points[1] += rarity_odds[t[3]]
     elif t[2] == "sheep":
+        print(t[3])
         rarity_points[2] += rarity_odds[t[3]]
     elif t[2] == "wheat":
+        print(t[3])
         rarity_points[3] += rarity_odds[t[3]]
     elif t[2] == "ore":
+        print(t[3])
         rarity_points[4] += rarity_odds[t[3]]
     
+print("rarity points:")
+for r in rarity_points:
+    print(r)
+
 def calculate_rarity(type):
     if type == "tree":
         return round(100 * rarity_points[0]/58)
@@ -259,38 +268,50 @@ plt.pie(rarity_percentage, labels=labels, colors=colors, startangle=90, autopct=
 
 plt.axis('equal')
 
-# plt.show()
+plt.show()
 
-def rank_by_production(type):
-    straight_production = []
-    scarcity_production = []
+'''
+Track the resources and values for each placement spot
+Options to rank by:
+    Straight resource production
+    Resource production taking into account resource scarcity
+'''
 
-    '''
-    Track the resources and values for each placement spot
-    Options to rank by:
-        Straight resource production
-        Resource production taking into account resource scarcity
-    '''
-    if type=="straight":
-        # Straight
-        for p in placement_spots:
-            total_production = 0
+def rank_by_production_straight():
+    production = []
+
+    # Straight
+    for p in placement_spots:
+        total_production = 0
             
-            for x in p:
-                print(x[1])
-                total_production += x[1]
-            
-            straight_production.append(total_production)
-            
-    elif type=="scarcity":
-        # Scarcity
-        for p in placement_spots:
-            for x in p:
-                print()
+        for x in p:
+            total_production += rarity_odds[x[1]]
 
-    return straight_production
+        production.append([p, total_production])
 
-print(rank_by_production("straight"))
+    return [production]
+'''          
+def rank_by_production_scarcity():
+    production = []
+    # Scarcity
+    for p in placement_spots:
+        total_production = 0
+
+        for x in p:
+            total_production += rarity_odds[x[1]]
+
+        production.append(total_production)
+    
+    return [production]
+'''
+
+for p in rank_by_production_straight():
+    print(p)
+
+#print(rank_by_production_scarcity())
+
+for p in placement_spots:
+    print(p)
 
 print("test")
 
