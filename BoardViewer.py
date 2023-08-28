@@ -3,6 +3,7 @@ import numpy as np
 from array import *
 from operator import itemgetter
 import matplotlib.pyplot as plt
+import random
 
 board_path = 'TestBoard.png'
 tree_path = 'TreeNew.png'
@@ -314,4 +315,35 @@ for p in placement_spots:
     print(p)
 
 print("test")
+
+def generate_board():
+    board = []
+    resources = [['tree', 4], ['brick', 3], ['sheep', 4], ['wheat', 4], ['ore', 3], ['desert', 1]]
+    rarities = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12]
+
+    for i in range(19):
+        random_resource = random.choice(resources)
+
+        while random_resource[1] == 0:
+            random_resource = random.choice(resources)
+
+        if random_resource[0] == 'desert':
+            random_rarity = 0
+        else:            
+            random_rarity = random.choice(rarities)
+
+
+        board.append([random_resource[0], random_rarity])
+        
+        random_resource[1] -= 1
+        if random_resource[0] != 'desert':
+            rarities.remove(random_rarity)
+
+    return board
+
+generated_board = generate_board()
+
+for g in generated_board:
+    print(g)
+
 
