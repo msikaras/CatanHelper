@@ -75,6 +75,7 @@ def BoardViewer():
     rarities = []
     placement_spots = []
     rarity_points = [0] * 5
+    rarity_odds = [0, 0, 1, 2, 3, 4, 5, 0, 5, 4, 3, 2, 1, 0, 0]
     rarity_percentage = [0] * 5
 
     xDiff = 40
