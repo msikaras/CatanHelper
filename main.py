@@ -4,7 +4,8 @@ from array import *
 from operator import itemgetter
 import matplotlib.pyplot as plt
 import math
-from PIL import Image, ImageDraw
+import random
+from PIL import Image, ImageDraw, ImageFont
 
 board_path = 'TestBoard.png'
 tree_path = 'TreeNew.png'
@@ -25,7 +26,76 @@ num11_path = '11.png'
 num12_path = '12.png'
 
 tiles = []
+rarity_odds = [0, 0, 1, 2, 3, 4, 5, 0, 5, 4, 3, 2, 1, 0, 0]
 
+#mapping of adjacent hexagons
+adjacencies =[
+    [1,3,4],
+    [0,2,4,5],
+    [1,5,6],
+    [0,4,7,8],
+    [0,1,3,5,8,9],
+    [1,2,4,6,9,10],
+    [2,5,10,11],
+    [3,8,12],
+    [3,4,7,9,12,13],
+    [4,5,8,10,13,14],
+    [5,6,9,11,14,15],
+    [6,10,15],
+    [7,8,13,16],
+    [8,9,12,14,16,17],
+    [9,10,13,15,17,18],
+    [10,11,14,18],
+    [12,13,17],
+    [13,14,16,18],
+    [14,15,17]
+]
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+# BOARD GENERATOR
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+def generate_board():
+    board = []
+    resources = [['tree', 4], ['brick', 3], ['sheep', 4], ['wheat', 4], ['ore', 3], ['desert', 1]]
+    rarities = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12]
+
+    for i in range(19):
+        random_resource = random.choice(resources)
+
+        while random_resource[1] == 0:
+            random_resource = random.choice(resources)
+
+        if random_resource[0] == 'desert':
+            random_rarity = 0
+        else:            
+            random_rarity = random.choice(rarities)
+
+
+        board.append([random_resource[0], random_rarity])
+        
+        random_resource[1] -= 1
+        if random_resource[0] != 'desert':
+            rarities.remove(random_rarity)
+
+    return board
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+# FAIR BOARD GENERATOR
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def check_fairness(board):
+    for i in range(19):
+        for j in adjacencies[i]:
+            if(board[i][1] == 6 and board[j][1] == 6 or board[i][1] == 8 and board[j][1] == 6 or board[i][1] == 6 and board[j][1] == 8 or board[i][1] == 8 and board[j][1] == 8):
+                return False
+    return True
+
+def generate_fair_board():
+    board = generate_board()
+    while(not check_fairness(board)):
+        board = generate_board()
+    return board
+    
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 # BOARD VIEWER
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -37,7 +107,6 @@ def BoardViewer():
     rarities = []
     placement_spots = []
     rarity_points = [0] * 5
-    rarity_odds = [0, 0, 1, 2, 3, 4, 5, 0, 5, 4, 3, 2, 1, 0, 0]
     rarity_percentage = [0] * 5
 
     xDiff = 40
@@ -111,9 +180,9 @@ def BoardViewer():
     findTiles(num12_path, 12)
 
 
-    cv2.imshow('Board', board_img)
-    cv2.waitKey()
-    cv2.destroyAllWindows()
+    #cv2.imshow('Board', board_img)
+    #cv2.waitKey()
+    #cv2.destroyAllWindows()
 
     tiles.sort(key=itemgetter(1))
 
@@ -275,7 +344,7 @@ def BoardViewer():
 
     plt.axis('equal')
 
-    plt.show()
+    #plt.show()
 
     '''
     Track the resources and values for each placement spot
@@ -322,7 +391,13 @@ def BoardViewer():
 
     print("test")
 
-def hexagonMaker(side_length,center_x, center_y, i):
+
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+# GUI
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def hexagonMaker(new_tiles,side_length,center_x, center_y, i):
     rotation_angle_deg = 30  # Angle in degrees
 
     # Calculate rotated hexagon vertices
@@ -341,55 +416,120 @@ def hexagonMaker(side_length,center_x, center_y, i):
     ]
     ]
 
+ 
     fill_color = ""
-    if(tiles[i][2]=='tree'):
+    if(new_tiles[i][0]=='tree'):
         fill_color = 'green'
-    elif(tiles[i][2]=='brick'):
+    elif(new_tiles[i][0]=='brick'):
         fill_color = 'darkorange'
-    elif(tiles[i][2]=='sheep'):
+    elif(new_tiles[i][0]=='sheep'):
         fill_color = 'lightgreen'
-    elif(tiles[i][2]=='wheat'):
+    elif(new_tiles[i][0]=='wheat'):
         fill_color = 'yellow'
-    elif(tiles[i][2]=='ore'):
+    elif(new_tiles[i][0]=='ore'):
         fill_color = 'gray'
     else:
-        fill_color = 'beige'
+        fill_color = (200, 180, 130)
 
-    return(hexagon_vertices, fill_color)
+    if(new_tiles[i][1] != 0):
+        return(hexagon_vertices, fill_color, str(new_tiles[i][1]))
+    else:
+        return(hexagon_vertices, fill_color, "")
     
-#----------------------------------------------------------------------------------------------------------------------------------------------------------
-# GUI
-#----------------------------------------------------------------------------------------------------------------------------------------------------------
-def BoardGUI(tiles):
-    print(tiles)
+    
+def dotDrawer(x, y, number, draw):
+    dot_size = 8
+    
+    text_color = 'red' if number in ('6', '8') else 'black'
+
+    if number != '' and rarity_odds[eval(number)] == 1:
+        draw.ellipse([(x - dot_size*2 + dot_size*1.5, y + 20), 
+                  (x + dot_size - dot_size*2 + dot_size*1.5, y + dot_size + 20)],
+                 fill = text_color)
+    elif number != '' and rarity_odds[eval(number)] == 2:
+        for i in range(0, 2):
+            draw.ellipse([(x - dot_size*2*i + dot_size*.5, y + 20), 
+                  (x + dot_size - dot_size*2*i + dot_size*.5, y + dot_size + 20)],
+                 fill = text_color)
+    elif number != '' and rarity_odds[eval(number)] == 3:
+        for i in range(0, 3):
+            draw.ellipse([(x - dot_size*2*i + dot_size*1.5, y + 20), 
+                  (x + dot_size - dot_size*2*i + dot_size*1.5, y + dot_size + 20)],
+                 fill = text_color)
+    elif number != '' and rarity_odds[eval(number)] == 4:
+        for i in range(0, 4):
+            draw.ellipse([(x - dot_size*2*i + dot_size*2.5, y + 20), 
+                  (x + dot_size - dot_size*2*i + dot_size*2.5, y + dot_size + 20)],
+                 fill = text_color)
+    elif number != '' and rarity_odds[eval(number)] == 5:
+        for i in range(0, 5):
+            draw.ellipse([(x - dot_size*2*i + dot_size*3.5, y + 20), 
+                  (x + dot_size - dot_size*2*i + dot_size*3.5, y + dot_size + 20)],
+                 fill = text_color)
+    
+
+def BoardGUI(new_tiles):
+    print(new_tiles)
     side_length = 100
     img = Image.new("RGB", (1200, 1200), "blue")
     draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("arial.ttf", 40)
     halfHexxy = side_length*math.sin(math.radians(60)) #half hex width
 
     for i in range (0,3):
-        verts,color = hexagonMaker(side_length,400+(10+2*halfHexxy)*i,200, i)
+        verts,color,number = hexagonMaker(new_tiles, side_length, 
+                                          425 + (2*halfHexxy + (halfHexxy/10)) * i, 
+                                          250, i)
         draw.polygon(verts, fill=color)
+        text_color = 'red' if number in ('6', '8') else 'black'
+        draw.text((425 + (2*halfHexxy + (halfHexxy/10)) * i, 250), 
+                  number, anchor = 'mm', font = font, fill = text_color)
+        dotDrawer(425 + (2*halfHexxy + (halfHexxy/10)) * i, 250, number, draw)
     for i in range (0,4):
-        verts,color = hexagonMaker(side_length,(400-halfHexxy-5)+((10+2*halfHexxy)*i),200+2*(halfHexxy-5), (i+3))
+        verts,color,number = hexagonMaker(new_tiles, side_length, 
+                                          (425-halfHexxy-(halfHexxy/20)) + ((2*halfHexxy + (halfHexxy/10))*i), 
+                                          250+2*(halfHexxy-(halfHexxy/10)), (i+3))
         draw.polygon(verts, fill=color)
+        text_color = 'red' if number in ('6', '8') else 'black'
+        draw.text(((425-halfHexxy-(halfHexxy/20)) + ((2*halfHexxy + (halfHexxy/10))*i), 250+2*(halfHexxy-(halfHexxy/10))), 
+                  number, anchor = 'mm', font = font, fill=text_color)
+        dotDrawer((425-halfHexxy-(halfHexxy/20)) + ((2*halfHexxy + (halfHexxy/10))*i), 250+2*(halfHexxy-(halfHexxy/10)), number, draw)
     for i in range (0,5):
-        verts,color = hexagonMaker(side_length,(400-2*halfHexxy-5)+(10+2*halfHexxy)*i,200+4*(halfHexxy-5), (i+7))
+        verts,color,number = hexagonMaker(new_tiles, side_length, 
+                                          (425-2*halfHexxy-(halfHexxy/10)) + (2*halfHexxy + (halfHexxy/10))*i, 
+                                          250+4*(halfHexxy-(halfHexxy/10)), (i+7))
         draw.polygon(verts, fill=color)
+        text_color = 'red' if number in ('6', '8') else 'black'
+        draw.text(((425-2*halfHexxy-(halfHexxy/10)) + (2*halfHexxy + (halfHexxy/10))*i, 250+4*(halfHexxy-(halfHexxy/10))), 
+                  number, anchor = 'mm', font = font, fill=text_color)
+        dotDrawer((425-2*halfHexxy-(halfHexxy/10)) + (2*halfHexxy + (halfHexxy/10))*i, 250+4*(halfHexxy-(halfHexxy/10)), number, draw)
     for i in range (0,4):
-        verts,color = hexagonMaker(side_length,(400-halfHexxy-5)+(10+2*halfHexxy)*i,200+6*(halfHexxy-5), (i+12))
+        verts,color,number = hexagonMaker(new_tiles, side_length, 
+                                          (425-halfHexxy-(halfHexxy/20))+(2*halfHexxy + (halfHexxy/10))*i, 
+                                          250+6*(halfHexxy-(halfHexxy/10)), (i+12))
         draw.polygon(verts, fill=color)
+        text_color = 'red' if number in ('6', '8') else 'black'
+        draw.text(((425-halfHexxy-(halfHexxy/20))+(2*halfHexxy + (halfHexxy/10))*i, 250+6*(halfHexxy-(halfHexxy/10))), 
+                  number, anchor = 'mm', font = font, fill=text_color)
+        dotDrawer((425-halfHexxy-(halfHexxy/20))+(2*halfHexxy + (halfHexxy/10))*i, 250+6*(halfHexxy-(halfHexxy/10)), number, draw)
     for i in range (0,3):
-        verts,color = hexagonMaker(side_length,400+(10+2*halfHexxy)*i,200+8*(halfHexxy-5), (i+16))
+        verts,color,number = hexagonMaker(new_tiles, side_length, 
+                                          425+(2*halfHexxy + (halfHexxy/10))*i, 
+                                          250+8*(halfHexxy-(halfHexxy/10)), (i+16))
         draw.polygon(verts, fill=color)
+        text_color = 'red' if number in ('6', '8') else 'black'
+        draw.text((425+(2*halfHexxy + (halfHexxy/10))*i, 250+8*(halfHexxy-(halfHexxy/10))), 
+                  number, anchor = 'mm', font = font, fill=text_color)
+        dotDrawer(425+(2*halfHexxy + (halfHexxy/10))*i, 250+8*(halfHexxy-(halfHexxy/10)), number, draw)
     img.save("generated_image.png")
 
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-# main
+# MAIN
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 def main():
     BoardViewer()
-    BoardGUI(tiles)
+    new_tiles = generate_fair_board()
+    BoardGUI(new_tiles)
 
 main()
