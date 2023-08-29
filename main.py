@@ -26,6 +26,7 @@ num11_path = '11.png'
 num12_path = '12.png'
 
 tiles = []
+rarity_odds = [0, 0, 1, 2, 3, 4, 5, 0, 5, 4, 3, 2, 1, 0, 0]
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 # BOARD GENERATOR
@@ -66,7 +67,6 @@ def BoardViewer():
     rarities = []
     placement_spots = []
     rarity_points = [0] * 5
-    rarity_odds = [0, 0, 1, 2, 3, 4, 5, 0, 5, 4, 3, 2, 1, 0, 0]
     rarity_percentage = [0] * 5
 
     xDiff = 40
@@ -389,12 +389,43 @@ def hexagonMaker(new_tiles,side_length,center_x, center_y, i):
     elif(new_tiles[i][0]=='ore'):
         fill_color = 'gray'
     else:
-        fill_color = 'beige'
+        fill_color = (200, 180, 130)
 
     if(new_tiles[i][1] != 0):
         return(hexagon_vertices, fill_color, str(new_tiles[i][1]))
     else:
         return(hexagon_vertices, fill_color, "")
+    
+    
+def dotDrawer(x, y, number, draw):
+    dot_size = 8
+    
+    text_color = 'red' if number in ('6', '8') else 'black'
+
+    if number != '' and rarity_odds[eval(number)] == 1:
+        draw.ellipse([(x - dot_size*2 + dot_size*1.5, y + 20), 
+                  (x + dot_size - dot_size*2 + dot_size*1.5, y + dot_size + 20)],
+                 fill = text_color)
+    elif number != '' and rarity_odds[eval(number)] == 2:
+        for i in range(0, 2):
+            draw.ellipse([(x - dot_size*2*i + dot_size*.5, y + 20), 
+                  (x + dot_size - dot_size*2*i + dot_size*.5, y + dot_size + 20)],
+                 fill = text_color)
+    elif number != '' and rarity_odds[eval(number)] == 3:
+        for i in range(0, 3):
+            draw.ellipse([(x - dot_size*2*i + dot_size*1.5, y + 20), 
+                  (x + dot_size - dot_size*2*i + dot_size*1.5, y + dot_size + 20)],
+                 fill = text_color)
+    elif number != '' and rarity_odds[eval(number)] == 4:
+        for i in range(0, 4):
+            draw.ellipse([(x - dot_size*2*i + dot_size*2.5, y + 20), 
+                  (x + dot_size - dot_size*2*i + dot_size*2.5, y + dot_size + 20)],
+                 fill = text_color)
+    elif number != '' and rarity_odds[eval(number)] == 5:
+        for i in range(0, 5):
+            draw.ellipse([(x - dot_size*2*i + dot_size*3.5, y + 20), 
+                  (x + dot_size - dot_size*2*i + dot_size*3.5, y + dot_size + 20)],
+                 fill = text_color)
     
 
 def BoardGUI(new_tiles):
@@ -402,28 +433,54 @@ def BoardGUI(new_tiles):
     side_length = 100
     img = Image.new("RGB", (1200, 1200), "blue")
     draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("arial.ttf", 40)
     halfHexxy = side_length*math.sin(math.radians(60)) #half hex width
 
     for i in range (0,3):
-        verts,color,number = hexagonMaker(new_tiles,side_length,400+(10+2*halfHexxy)*i,200, i)
+        verts,color,number = hexagonMaker(new_tiles, side_length, 
+                                          400 + (2*halfHexxy + (halfHexxy/10)) * i, 
+                                          200, i)
         draw.polygon(verts, fill=color)
-        draw.text((400+(10+2*halfHexxy)*i-30, 200-30), number, font=ImageFont.truetype("arial.ttf", 40), fill='black')
+        text_color = 'red' if number in ('6', '8') else 'black'
+        draw.text((400 + (2*halfHexxy + (halfHexxy/10)) * i, 200), 
+                  number, anchor = 'mm', font = font, fill = text_color)
+        dotDrawer(400 + (2*halfHexxy + (halfHexxy/10)) * i, 200, number, draw)
     for i in range (0,4):
-        verts,color,number = hexagonMaker(new_tiles,side_length,(400-halfHexxy-5)+((10+2*halfHexxy)*i),200+2*(halfHexxy-5), (i+3))
+        verts,color,number = hexagonMaker(new_tiles, side_length, 
+                                          (400-halfHexxy-(halfHexxy/20)) + ((2*halfHexxy + (halfHexxy/10))*i), 
+                                          200+2*(halfHexxy-(halfHexxy/10)), (i+3))
         draw.polygon(verts, fill=color)
-        draw.text(((400-halfHexxy-5)+((10+2*halfHexxy)*i)-30, 200+2*(halfHexxy-5)-30), number, font=ImageFont.truetype("arial.ttf", 40), fill='black')
+        text_color = 'red' if number in ('6', '8') else 'black'
+        draw.text(((400-halfHexxy-(halfHexxy/20)) + ((2*halfHexxy + (halfHexxy/10))*i), 200+2*(halfHexxy-(halfHexxy/10))), 
+                  number, anchor = 'mm', font = font, fill=text_color)
+        dotDrawer((400-halfHexxy-(halfHexxy/20)) + ((2*halfHexxy + (halfHexxy/10))*i), 200+2*(halfHexxy-(halfHexxy/10)), number, draw)
     for i in range (0,5):
-        verts,color,number = hexagonMaker(new_tiles,side_length,(400-2*halfHexxy-5)+(10+2*halfHexxy)*i,200+4*(halfHexxy-5), (i+7))
+        verts,color,number = hexagonMaker(new_tiles, side_length, 
+                                          (400-2*halfHexxy-(halfHexxy/10)) + (2*halfHexxy + (halfHexxy/10))*i, 
+                                          200+4*(halfHexxy-(halfHexxy/10)), (i+7))
         draw.polygon(verts, fill=color)
-        draw.text(((400-2*halfHexxy-5)+((10+2*halfHexxy)*i)-30, 200+4*(halfHexxy-5)-30), number, font=ImageFont.truetype("arial.ttf", 40), fill='black')
+        text_color = 'red' if number in ('6', '8') else 'black'
+        draw.text(((400-2*halfHexxy-(halfHexxy/10)) + (2*halfHexxy + (halfHexxy/10))*i, 200+4*(halfHexxy-(halfHexxy/10))), 
+                  number, anchor = 'mm', font = font, fill=text_color)
+        dotDrawer((400-2*halfHexxy-(halfHexxy/10)) + (2*halfHexxy + (halfHexxy/10))*i, 200+4*(halfHexxy-(halfHexxy/10)), number, draw)
     for i in range (0,4):
-        verts,color,number = hexagonMaker(new_tiles,side_length,(400-halfHexxy-5)+(10+2*halfHexxy)*i,200+6*(halfHexxy-5), (i+12))
+        verts,color,number = hexagonMaker(new_tiles, side_length, 
+                                          (400-halfHexxy-(halfHexxy/20))+(2*halfHexxy + (halfHexxy/10))*i, 
+                                          200+6*(halfHexxy-(halfHexxy/10)), (i+12))
         draw.polygon(verts, fill=color)
-        draw.text(((400-halfHexxy-5)+((10+2*halfHexxy)*i)-30, 200+6*(halfHexxy-5)-30), number, font=ImageFont.truetype("arial.ttf", 40), fill='black')
+        text_color = 'red' if number in ('6', '8') else 'black'
+        draw.text(((400-halfHexxy-(halfHexxy/20))+(2*halfHexxy + (halfHexxy/10))*i, 200+6*(halfHexxy-(halfHexxy/10))), 
+                  number, anchor = 'mm', font = font, fill=text_color)
+        dotDrawer((400-halfHexxy-(halfHexxy/20))+(2*halfHexxy + (halfHexxy/10))*i, 200+6*(halfHexxy-(halfHexxy/10)), number, draw)
     for i in range (0,3):
-        verts,color,number = hexagonMaker(new_tiles,side_length,400+(10+2*halfHexxy)*i,200+8*(halfHexxy-5), (i+16))
+        verts,color,number = hexagonMaker(new_tiles, side_length, 
+                                          400+(2*halfHexxy + (halfHexxy/10))*i, 
+                                          200+8*(halfHexxy-(halfHexxy/10)), (i+16))
         draw.polygon(verts, fill=color)
-        draw.text((400+(10+2*halfHexxy)*i-30, 200+8*(halfHexxy-5)-30), number, font=ImageFont.truetype("arial.ttf", 40), fill='black')
+        text_color = 'red' if number in ('6', '8') else 'black'
+        draw.text((400+(2*halfHexxy + (halfHexxy/10))*i, 200+8*(halfHexxy-(halfHexxy/10))), 
+                  number, anchor = 'mm', font = font, fill=text_color)
+        dotDrawer(400+(2*halfHexxy + (halfHexxy/10))*i, 200+8*(halfHexxy-(halfHexxy/10)), number, draw)
     img.save("generated_image.png")
 
 
