@@ -52,7 +52,14 @@ adjacencies =[
 ]
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-# BOARD GENERATOR
+#   BOARD GENERATOR
+# Generates a random board list
+# Ex. output: 
+# [['wheat', 9], ['ore', 12], ['desert', 0], ['brick', 3], 
+# ['wheat', 11], ['wheat', 11], ['ore', 5], ['ore', 8], 
+# ['brick', 8], ['tree', 10], ['brick', 2], ['wheat', 3], 
+# ['tree', 5], ['sheep', 4], ['sheep', 10], ['tree', 6], 
+# ['tree', 4], ['sheep', 6], ['sheep', 9]]
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 def generate_board():
     board = []
@@ -97,7 +104,8 @@ def generate_fair_board():
     return board
     
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-# BOARD VIEWER
+#   BOARD VIEWER
+# Generates a board list of tiles that is able to be analyzed given a screenshot of a board from colonist.io
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 def BoardViewer():
     threshold = .80
@@ -345,57 +353,50 @@ def BoardViewer():
     plt.axis('equal')
 
     #plt.show()
+#
+#
+#
+'''
+Track the resources and values for each placement spot
+Options to rank by:
+    Straight resource production
+    Resource production taking into account resource scarcity
+'''
 
-    '''
-    Track the resources and values for each placement spot
-    Options to rank by:
-        Straight resource production
-        Resource production taking into account resource scarcity
-    '''
+def rank_by_production_straight(spots_to_rank):
+    production = []
 
-    def rank_by_production_straight():
-        production = []
+    # Straight
+    for s in spots_to_rank:
+        total_production = 0
+            
+        for x in s[1:]:
+            total_production += rarity_odds[0 if x[1] == '' else int(x[1])]
 
-        # Straight
-        for p in placement_spots:
-            total_production = 0
-                
-            for x in p:
-                total_production += rarity_odds[x[1]]
+        production.append(total_production)
 
-            production.append([p, total_production])
-
-        return [production]
-    '''          
-    def rank_by_production_scarcity():
-        production = []
-        # Scarcity
-        for p in placement_spots:
-            total_production = 0
-
-            for x in p:
-                total_production += rarity_odds[x[1]]
-
-            production.append(total_production)
-        
-        return [production]
-    '''
-
-    for p in rank_by_production_straight():
-        print(p)
-
-    #print(rank_by_production_scarcity())
-
+    return production
+'''          
+def rank_by_production_scarcity():
+    production = []
+    # Scarcity
     for p in placement_spots:
-        print(p)
+        total_production = 0
 
-    print("test")
+        for x in p:
+            total_production += rarity_odds[x[1]]
+
+        production.append(total_production)
+    
+    return [production]
+'''
 
 
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 # GUI
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
+gui_spots = []
 
 def hexagonMaker(new_tiles,side_length,center_x, center_y, i):
     rotation_angle_deg = 30  # Angle in degrees
@@ -467,6 +468,71 @@ def dotDrawer(x, y, number, draw):
                   (x + dot_size - dot_size*2*i + dot_size*3.5, y + dot_size + 20)],
                  fill = text_color)
     
+# Gets the coordinates of each placement spot and puts all of the placement spots in gui_spots as sorted list
+def placementCoordinates(all_hexagon_vertices, draw):
+    spot_size = 20
+
+    for a in all_hexagon_vertices:
+        for v in a[0]:
+            check_other_spot = False
+            x = v[0]
+            y = v[1]
+        
+            for s in gui_spots:
+                if abs(x - s[0][0]) <= 30 and abs(y - s[0][1]) <= 30:
+                    check_other_spot = True
+                    s.append([a[1], a[2]])
+            
+            if not check_other_spot:
+                gui_spots.append([[x, y], [a[1], a[2]]])
+                
+    gui_spots.sort(key=lambda x: x[0][1])
+    
+    gui_spots[:7] = sorted(gui_spots[:7])
+    gui_spots[7:16] = sorted(gui_spots[7:16])
+    gui_spots[16:27] = sorted(gui_spots[16:27])
+    gui_spots[27:38] = sorted(gui_spots[27:38])
+    gui_spots[38:47] = sorted(gui_spots[38:47])
+    gui_spots[47:54] = sorted(gui_spots[47:54])
+            
+            
+    for g in gui_spots[1:]:
+        for i in g:
+            if(i[0] == 'green'):
+                i[0] = 'tree'
+            elif(i[0] == 'darkorange'):
+                i[0] = 'brick'
+            elif(i[0] == 'lightgreen'):
+                i[0] = 'sheep'
+            elif(i[0] == 'yellow'):
+                i[0] = 'wheat'
+            elif(i[0] == 'gray'):
+                i[0] = 'ore'
+            elif(i[0] == (200, 180, 130)):
+                i[0] = 'desert'
+    
+    for g in gui_spots:
+        print(g)
+        
+    
+    
+def spotDrawer(draw):
+    spot_size = 20
+    
+    visualizeProductionRaw(spot_size, draw)
+    
+    
+def visualizeProductionRaw(spot_size, draw):
+    production = rank_by_production_straight(gui_spots)
+    
+    for p in production:
+        print(p)
+        
+    for i in range(0, len(gui_spots)):
+        draw.ellipse([(gui_spots[i][0][0] - spot_size/2, gui_spots[i][0][1] - spot_size/2), 
+                      (gui_spots[i][0][0] + spot_size/2, gui_spots[i][0][1] + spot_size/2)],
+                     fill = (255 - production[i] * 17, production[i] * 17, 0))
+    
 
 def BoardGUI(new_tiles):
     print(new_tiles)
@@ -475,11 +541,13 @@ def BoardGUI(new_tiles):
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("arial.ttf", 40)
     halfHexxy = side_length*math.sin(math.radians(60)) #half hex width
+    all_hexagon_vertices = []
 
     for i in range (0,3):
         verts,color,number = hexagonMaker(new_tiles, side_length, 
                                           425 + (2*halfHexxy + (halfHexxy/10)) * i, 
                                           250, i)
+        all_hexagon_vertices.append([verts, color, number])
         draw.polygon(verts, fill=color)
         text_color = 'red' if number in ('6', '8') else 'black'
         draw.text((425 + (2*halfHexxy + (halfHexxy/10)) * i, 250), 
@@ -489,6 +557,7 @@ def BoardGUI(new_tiles):
         verts,color,number = hexagonMaker(new_tiles, side_length, 
                                           (425-halfHexxy-(halfHexxy/20)) + ((2*halfHexxy + (halfHexxy/10))*i), 
                                           250+2*(halfHexxy-(halfHexxy/10)), (i+3))
+        all_hexagon_vertices.append([verts, color, number])
         draw.polygon(verts, fill=color)
         text_color = 'red' if number in ('6', '8') else 'black'
         draw.text(((425-halfHexxy-(halfHexxy/20)) + ((2*halfHexxy + (halfHexxy/10))*i), 250+2*(halfHexxy-(halfHexxy/10))), 
@@ -498,6 +567,7 @@ def BoardGUI(new_tiles):
         verts,color,number = hexagonMaker(new_tiles, side_length, 
                                           (425-2*halfHexxy-(halfHexxy/10)) + (2*halfHexxy + (halfHexxy/10))*i, 
                                           250+4*(halfHexxy-(halfHexxy/10)), (i+7))
+        all_hexagon_vertices.append([verts, color, number])
         draw.polygon(verts, fill=color)
         text_color = 'red' if number in ('6', '8') else 'black'
         draw.text(((425-2*halfHexxy-(halfHexxy/10)) + (2*halfHexxy + (halfHexxy/10))*i, 250+4*(halfHexxy-(halfHexxy/10))), 
@@ -507,6 +577,7 @@ def BoardGUI(new_tiles):
         verts,color,number = hexagonMaker(new_tiles, side_length, 
                                           (425-halfHexxy-(halfHexxy/20))+(2*halfHexxy + (halfHexxy/10))*i, 
                                           250+6*(halfHexxy-(halfHexxy/10)), (i+12))
+        all_hexagon_vertices.append([verts, color, number])
         draw.polygon(verts, fill=color)
         text_color = 'red' if number in ('6', '8') else 'black'
         draw.text(((425-halfHexxy-(halfHexxy/20))+(2*halfHexxy + (halfHexxy/10))*i, 250+6*(halfHexxy-(halfHexxy/10))), 
@@ -516,11 +587,15 @@ def BoardGUI(new_tiles):
         verts,color,number = hexagonMaker(new_tiles, side_length, 
                                           425+(2*halfHexxy + (halfHexxy/10))*i, 
                                           250+8*(halfHexxy-(halfHexxy/10)), (i+16))
+        all_hexagon_vertices.append([verts, color, number])
         draw.polygon(verts, fill=color)
         text_color = 'red' if number in ('6', '8') else 'black'
         draw.text((425+(2*halfHexxy + (halfHexxy/10))*i, 250+8*(halfHexxy-(halfHexxy/10))), 
                   number, anchor = 'mm', font = font, fill=text_color)
         dotDrawer(425+(2*halfHexxy + (halfHexxy/10))*i, 250+8*(halfHexxy-(halfHexxy/10)), number, draw)
+    
+    placementCoordinates(all_hexagon_vertices, draw)
+    spotDrawer(draw)
     img.save("generated_image.png")
 
 
@@ -531,5 +606,8 @@ def main():
     BoardViewer()
     new_tiles = generate_fair_board()
     BoardGUI(new_tiles)
+    
+    
+
 
 main()
