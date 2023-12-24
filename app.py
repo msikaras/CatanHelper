@@ -9,7 +9,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 from flask import Flask, jsonify, request, render_template, send_file, current_app, send_from_directory
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 board_path = 'training/TestBoard.png'
 tree_path = 'training/TreeNew.png'
@@ -62,6 +62,9 @@ adjacencies =[
 @app.route('/')
 def index():
     return render_template('index.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 @app.route('/generate_board', methods=['POST'])
 def generate_board():
