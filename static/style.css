@@ -1,17 +1,52 @@
 body {
     font-family: Arial, sans-serif;
+    background-color: rgb(208, 224, 227);
+    display: flex;
+    flex-direction: column; /* Updated to column direction */
+    margin: 0; /* Remove default margin */
+}
+
+#heading {
+    width: 100%;
     text-align: center;
-    margin: 20px;
+    padding-right: 20px;
+    background-color: rgb(127, 182, 201); /* Adjust the color as needed */
+    color: rgb(0, 0, 0); /* Adjust the text color as needed */
 }
 
-h1 {
-    color: #333;
+#button-container,
+#img-container {
+    padding: 10px;
+    background-color: rgb(208, 224, 227);
+    text-align: center;
 }
 
-#image-input {
-    margin-right: 10px;
+#button-container input[type="file"]{    
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgb(255, 229, 153);
+    color: black; /* Adjust text color as needed */
+    font-size: 16px; /* Adjust font size as needed */
+    cursor: pointer;
+}
+
+#button-container button {
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgb(106, 168, 79);
+    color: black; /* Adjust text color as needed */
+    font-size: 16px; /* Adjust font size as needed */
+    cursor: pointer;
+}
+
+
+#img-container h2 {
+    font-weight: normal;
+    text-decoration: underline;
 }
 
 #result-container {
-    margin-top: 20px;
+    margin-top: 10px;
 }

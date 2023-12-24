@@ -1,4 +1,3 @@
-// script.js
 async function processImage() {
     console.log('Button clicked!');
     const resultContainer = document.getElementById('result-container');
@@ -17,8 +16,6 @@ async function processImage() {
         if (response.ok) {
             const responseData = await response.json();
 
-            resultContainer.innerHTML = "Board generated successfully.";
-
             // Remove existing image if present
             const existingImage = document.getElementById('generated-image');
             if (existingImage) {
@@ -29,6 +26,11 @@ async function processImage() {
             const imgElement = document.createElement('img');
             imgElement.id = 'generated-image';
             imgElement.src = `${responseData.image_path}?timestamp=${timestamp}`;
+
+            // Set the width and height to control the size
+            imgElement.style.width = '50%';  // Adjust the percentage as needed
+            imgElement.style.height = 'auto';
+
             resultContainer.appendChild(imgElement);
         } else {
             resultContainer.innerHTML = "Failed to generate the board.";

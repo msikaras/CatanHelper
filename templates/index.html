@@ -6,11 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catan Board Generator</title>
     <link rel="icon" href="data:,">
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+    
 </head>
 <body>
-    <input type="file" id="image-input" accept=".png, .jpg, .jpeg" />
-    <button onclick="processImage()">Generate Board</button>
-    <div id="result-container"></div>
+    <div id="heading">
+        <h1>CatanHelper</h1>
+    </div>
+
+    <div id="button-container">
+        <input type="file" id="image-input" accept=".png, .jpg, .jpeg" />
+        <button onclick="processImage()">Generate Board</button>
+    </div>
+
+    <div id="img-container">
+        <h2>Current Board:</h2>
+        <div id="result-container"></div>
+    </div>
+
     <script src="static/script.js"></script>
 </body>
 </html>
