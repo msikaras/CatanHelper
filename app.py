@@ -5,7 +5,11 @@ from operator import itemgetter
 import matplotlib.pyplot as plt
 import math
 import random
+import os
 from PIL import Image, ImageDraw, ImageFont
+from flask import Flask, jsonify, request, render_template, send_file, current_app, send_from_directory
+
+app = Flask(__name__)
 
 board_path = 'TestBoard.png'
 tree_path = 'TreeNew.png'
@@ -50,6 +54,26 @@ adjacencies =[
     [13,14,16,18],
     [14,15,17]
 ]
+
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+#   FLASK
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/generate_board', methods=['POST'])
+def generate_board():
+    # Clear the spots
+    global gui_spots
+    gui_spots = []
+    # Generate the board
+    new_tiles = generate_fair_board()
+    BoardImage(new_tiles)
+
+    image_path = 'static/generated_image.png'
+    return jsonify({'image_path': image_path})
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 #   BOARD GENERATOR
@@ -353,9 +377,6 @@ def BoardViewer():
     plt.axis('equal')
 
     #plt.show()
-#
-#
-#
 '''
 Track the resources and values for each placement spot
 Options to rank by:
@@ -376,6 +397,7 @@ def rank_by_production_straight(spots_to_rank):
         production.append(total_production)
 
     return production
+
 '''          
 def rank_by_production_scarcity():
     production = []
@@ -392,9 +414,8 @@ def rank_by_production_scarcity():
 '''
 
 
-
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-# GUI
+# Image Generator
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 gui_spots = []
 
@@ -534,7 +555,7 @@ def visualizeProductionRaw(spot_size, draw):
                      fill = (255 - production[i] * 17, production[i] * 17, 0))
     
 
-def BoardGUI(new_tiles):
+def BoardImage(new_tiles):
     print(new_tiles)
     side_length = 100
     img = Image.new("RGB", (1200, 1200), "blue")
@@ -596,18 +617,15 @@ def BoardGUI(new_tiles):
     
     placementCoordinates(all_hexagon_vertices, draw)
     spotDrawer(draw)
-    img.save("generated_image.png")
+    img.save("static/generated_image.png")
 
-
-#----------------------------------------------------------------------------------------------------------------------------------------------------------
-# MAIN
-#----------------------------------------------------------------------------------------------------------------------------------------------------------
+'''  
 def main():
     BoardViewer()
     new_tiles = generate_fair_board()
-    BoardGUI(new_tiles)
-    
-    
+    BoardImage(new_tiles)
+
 
 
 main()
+'''  
