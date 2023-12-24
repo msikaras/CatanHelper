@@ -65,7 +65,7 @@ def index():
 
 @app.route('/generate_board', methods=['POST'])
 def generate_board():
-    # Clear the spots
+    # Clears the spots
     global gui_spots
     gui_spots = []
     # Generate the board
