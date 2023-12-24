@@ -563,7 +563,14 @@ def BoardImage(new_tiles):
     side_length = 100
     img = Image.new("RGB", (1200, 1200), "blue")
     draw = ImageDraw.Draw(img)
-    font = ImageFont.load_default()
+    # Specify the font file path
+    font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+
+    # Specify the font size
+    font_size = 40
+
+    # Load the font
+    font = ImageFont.truetype(font_path, font_size)
 
     halfHexxy = side_length*math.sin(math.radians(60)) #half hex width
     all_hexagon_vertices = []
