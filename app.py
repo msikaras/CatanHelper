@@ -563,7 +563,8 @@ def BoardImage(new_tiles):
     side_length = 100
     img = Image.new("RGB", (1200, 1200), "blue")
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype("arial.ttf", 40)
+    font = ImageFont.load_default()
+
     halfHexxy = side_length*math.sin(math.radians(60)) #half hex width
     all_hexagon_vertices = []
 
