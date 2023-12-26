@@ -2,20 +2,27 @@ body {
     font-family: Arial, sans-serif;
     background-color: rgb(208, 224, 227);
     display: flex;
-    flex-direction: column; /* Updated to column direction */
-    margin: 0; /* Remove default margin */
+    flex-direction: column; 
+    margin: 0; 
 }
 
 .checkbox-container {
-    margin-left: 20px; /* Adjust the left margin as needed */
+    margin-left: 20px; 
+}
+
+.button-description {
+    text-align: center;
+    margin-top: 10px; 
+    font-size: 10px; 
+    font-weight: lighter;
 }
 
 #heading {
     width: 100%;
     text-align: center;
     padding-right: 20px;
-    background-color: rgb(127, 182, 201); /* Adjust the color as needed */
-    color: rgb(0, 0, 0); /* Adjust the text color as needed */
+    background-color: rgb(127, 182, 201); 
+    color: rgb(0, 0, 0); 
 }
 
 #button-container,
@@ -30,8 +37,8 @@ body {
     border: none;
     border-radius: 10px;
     background-color: rgb(255, 229, 153);
-    color: black; /* Adjust text color as needed */
-    font-size: 16px; /* Adjust font size as needed */
+    color: black; 
+    font-size: 16px; 
     cursor: pointer;
 }
 
@@ -40,8 +47,8 @@ body {
     border: none;
     border-radius: 10px;
     background-color: rgb(106, 168, 79);
-    color: black; /* Adjust text color as needed */
-    font-size: 16px; /* Adjust font size as needed */
+    color: black; 
+    font-size: 16px; 
     cursor: pointer;
 }
 
