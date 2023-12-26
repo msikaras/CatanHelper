@@ -563,11 +563,16 @@ def BoardImage(new_tiles):
     side_length = 100
     img = Image.new("RGB", (1200, 1200), "blue")
     draw = ImageDraw.Draw(img)
-    # Specify the font file path
-    font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
     # Specify the font size
     font_size = 40
+    
+    if os.name == 'posix':  # Unix-like systems (including Heroku)
+        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+    elif os.name == 'nt':   # Windows
+        font_path = "arial.ttf"  # Update this with the correct path if needed
+    else:
+        raise OSError("Unsupported operating system")
 
     # Load the font
     font = ImageFont.truetype(font_path, font_size)
