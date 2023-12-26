@@ -19,6 +19,22 @@
         <button onclick="processImage()">Generate Board</button>
     </div>
 
+    <div class="checkbox-container">
+        <h2>Generation Settings</h2>
+    </div>
+    
+    <form>
+        <div class="checkbox-container">
+            <label for="highCheckbox">6 & 8 Don't Touch</label>
+            <input type="checkbox" id="highCheckbox" name="highbool" onchange="updateCheckbox('highbool', this.checked)">
+        </div>
+
+        <div class="checkbox-container">
+            <label for="lowCheckbox">2 & 12 Don't Touch</label>
+            <input type="checkbox" id="lowCheckbox" name="lowbool" onchange="updateCheckbox('lowbool', this.checked)">
+        </div>
+    </form>
+
     <div id="img-container">
         <h2>Current Board:</h2>
         <div id="result-container"></div>

@@ -39,3 +39,17 @@ async function processImage() {
         console.error('Error generating board:', error);
     }
 }
+
+// JavaScript function
+function updateCheckbox(name, value) {
+    // Create a new XMLHttpRequest object
+    var xhr = new XMLHttpRequest();
+
+    // Configure it: GET-request for the /update_checkbox endpoint with parameters
+    xhr.open('GET', '/update_checkbox?name=' + name + '&value=' + value, true);
+
+    // Send the request
+    xhr.send();
+}
+
+

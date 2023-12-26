@@ -6,6 +6,10 @@ body {
     margin: 0; /* Remove default margin */
 }
 
+.checkbox-container {
+    margin-left: 20px; /* Adjust the left margin as needed */
+}
+
 #heading {
     width: 100%;
     text-align: center;

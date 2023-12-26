@@ -55,6 +55,9 @@ adjacencies =[
     [14,15,17]
 ]
 
+highbool = False
+lowbool = False
+
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 #   FLASK
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -77,6 +80,31 @@ def generate_board():
 
     image_path = 'static/generated_image.png'
     return jsonify({'image_path': image_path})
+
+# Flask route
+@app.route('/update_checkbox', methods=['GET'])
+def update_checkbox():
+    global highbool, lowbool
+
+    # Get the name and value parameters from the query string
+    name = request.args.get('name')
+    value = request.args.get('value') == 'true'  # Convert the string to a boolean
+
+    # Update the corresponding variable based on the checkbox name
+    if name == 'highbool':
+        highbool = value
+        if not value:
+            # highCheckbox is deselected, set highbool to False
+            highbool = False
+    elif name == 'lowbool':
+        lowbool = value
+        if not value:
+            # lowCheckbox is deselected, set lowbool to False
+            lowbool = False
+
+    # Return a JSON response indicating success
+    return jsonify({'success': True})
+
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 #   BOARD GENERATOR
@@ -117,17 +145,34 @@ def generate_board():
 # FAIR BOARD GENERATOR
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def check_fairness(board):
+# 6 & 8
+def check_fairness_high(board):
     for i in range(19):
         for j in adjacencies[i]:
             if(board[i][1] == 6 and board[j][1] == 6 or board[i][1] == 8 and board[j][1] == 6 or board[i][1] == 6 and board[j][1] == 8 or board[i][1] == 8 and board[j][1] == 8):
                 return False
     return True
 
+# 2 & 12
+def check_fairness_low(board):
+    for i in range(19):
+        for j in adjacencies[i]:
+            if(board[i][1] == 2 and board[j][1] == 12 or board[i][1] == 12 and board[j][1] == 2):
+                return False
+    return True
+
 def generate_fair_board():
     board = generate_board()
-    while(not check_fairness(board)):
-        board = generate_board()
+    if(highbool and lowbool):
+        while(not (check_fairness_high(board) and check_fairness_low(board))):
+            board = generate_board()
+    elif(highbool):
+        while(not (check_fairness_high(board))):
+            board = generate_board()
+    elif(lowbool):
+        while(not (check_fairness_low(board))):
+            board = generate_board()
+    
     return board
     
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
