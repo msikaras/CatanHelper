@@ -8,6 +8,7 @@ import random
 import os
 from PIL import Image, ImageDraw, ImageFont
 from flask import Flask, jsonify, request, render_template, send_file, current_app, send_from_directory
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -62,20 +63,53 @@ lowbool = False
 #   FLASK
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 
+ENV = 'prod'
+
+if ENV == 'dev':
+    app.debug = True
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456@localhost/catandev'
+else:
+    app.debug = False
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://dvfupqtqtkckzr:295b5cee7a5a2aeba0f469f8735914dc3c6350bbc2ed9e62ef06202fd6faccd0@ec2-52-206-36-147.compute-1.amazonaws.com:5432/d14t9596010a60'
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+class BoxClicked(db.Model):
+    __tablename__ = 'answers'
+    id = db.Column(db.Integer, primary_key=True)
+    highbool = db.Column(db.Boolean, default=False)
+    lowbool = db.Column(db.Boolean, default=False)
+
+    def __init__(self, highbool, lowbool):
+        self.highbool = False
+        self.lowbool = False
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
 @app.route('/generate_board', methods=['POST'])
 def generate_board():
+    # Fetch values from the database
+    box_clicked = BoxClicked.query.first()
+
+    # Check if the box_clicked object is None
+    if box_clicked is None:
+        # Create a new row with default values
+        box_clicked = BoxClicked(highbool=False, lowbool=False)
+        db.session.add(box_clicked)
+        db.session.commit()
+    
+    highbool = box_clicked.highbool
+    lowbool = box_clicked.lowbool
+
     # Clears the spots
     global gui_spots
     gui_spots = []
     # Generate the board
-    new_tiles = generate_fair_board()
+    new_tiles = generate_fair_board(highbool, lowbool)
     BoardImage(new_tiles)
 
     image_path = 'static/generated_image.png'
@@ -84,27 +118,32 @@ def generate_board():
 # Flask route
 @app.route('/update_checkbox', methods=['GET'])
 def update_checkbox():
-    global highbool, lowbool
-
     # Get the name and value parameters from the query string
     name = request.args.get('name')
     value = request.args.get('value') == 'true'  # Convert the string to a boolean
 
+    # Fetch the first row from the database
+    box_clicked = BoxClicked.query.first()
+
     # Update the corresponding variable based on the checkbox name
     if name == 'highbool':
-        highbool = value
-        if not value:
-            # highCheckbox is deselected, set highbool to False
-            highbool = False
+        box_clicked.highbool = value
     elif name == 'lowbool':
-        lowbool = value
-        if not value:
-            # lowCheckbox is deselected, set lowbool to False
-            lowbool = False
+        box_clicked.lowbool = value
+
+    # Commit changes to the database
+    db.session.commit()
 
     # Return a JSON response indicating success
     return jsonify({'success': True})
 
+if __name__ == '__main__':
+    # Create the database tables before running the app
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+
+    app.run()
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 #   BOARD GENERATOR
@@ -161,7 +200,8 @@ def check_fairness_low(board):
                 return False
     return True
 
-def generate_fair_board():
+def generate_fair_board(highbool, lowbool):
+    print(f'highbool: {highbool}, lowbool: {lowbool}')
     board = generate_board()
     if(highbool and lowbool):
         while(not (check_fairness_high(board) and check_fairness_low(board))):
