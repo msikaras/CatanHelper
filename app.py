@@ -683,7 +683,7 @@ if ENV == 'dev':
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456@localhost/catandev'
 else:
     app.debug = False
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://moznzzbkvmpinh:0ea79ac31e7c75ffff8a344e0b90fd4762d897e01c5bb20420b1356ee84f0e4e@ec2-54-205-67-130.compute-1.amazonaws.com:5432/d88h34jkbeof7i'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://u1rkd3f3ni2947:pfabb712f04b8348fc5bc95eba1f7b388708a308434057e2c21b2e3202c5d97e0@c8lcd8bq1mia7p.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/dcgol2udn1sou5'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
