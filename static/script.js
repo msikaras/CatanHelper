@@ -32,6 +32,9 @@ async function processImage() {
             imgElement.style.height = 'auto';
 
             resultContainer.appendChild(imgElement);
+
+            // display heading
+            document.querySelector('#img-container h2').style.display = 'block';
         } else {
             resultContainer.innerHTML = "Failed to generate the board.";
         }
@@ -40,7 +43,6 @@ async function processImage() {
     }
 }
 
-// JavaScript function
 function updateCheckbox(name, value) {
     // Create a new XMLHttpRequest object
     var xhr = new XMLHttpRequest();
@@ -51,5 +53,6 @@ function updateCheckbox(name, value) {
     // Send the request
     xhr.send();
 }
+
 
 
