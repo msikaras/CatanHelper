@@ -121,9 +121,9 @@ def check_dist(board):
     for i in range(19):
         count = 0
         for j in adjacencies[i]:
-            if(board[i][0] == board[j][0] ):
+            if(board[i][0] == board[j][0]):
                 count = count + 1
-        if(count > 1):
+        if(count > 0):
             return False
     return True
 
@@ -157,8 +157,8 @@ def generate_fair_board(highbool, lowbool, distbool):
     return board
     
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-#   BOARD VIEWER
-# Generates a board list of tiles that is able to be analyzed given a screenshot of a board from colonist.io
+#  BOARD VIEWER
+#  Generates a board list of tiles that is able to be analyzed given a screenshot of a board from colonist.io using CV
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 def BoardViewer():
     threshold = .80
@@ -661,112 +661,116 @@ def BoardImage(new_tiles):
     spotDrawer(draw)
     img.save("static/generated_image.png")
 
-'''  
-def main():
-    BoardViewer()
-    new_tiles = generate_fair_board()
-    BoardImage(new_tiles)
+
+MODE = 'flask'
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+#   CV
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
+if MODE == 'cv':
+    def main():
+        BoardViewer()
+        for i in range( len(tiles)):
+            tiles[i] = tiles[i][2:]
+        BoardImage(tiles)
 
 
-
-main()
-'''  
+    main()
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 #   FLASK
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-ENV = 'prod'
-
-if ENV == 'dev':
-    app.debug = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456@localhost/catandev'
 else:
-    app.debug = False
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://u1rkd3f3ni2947:pfabb712f04b8348fc5bc95eba1f7b388708a308434057e2c21b2e3202c5d97e0@c8lcd8bq1mia7p.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/dcgol2udn1sou5'
+    ENV = 'prod'
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    if ENV == 'dev':
+        app.debug = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456@localhost/catandev'
+    else:
+        app.debug = False
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://u1rkd3f3ni2947:pfabb712f04b8348fc5bc95eba1f7b388708a308434057e2c21b2e3202c5d97e0@c8lcd8bq1mia7p.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/dcgol2udn1sou5'
 
-db = SQLAlchemy(app)
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-class BoxClicked(db.Model):
-    __tablename__ = 'answers'
-    id = db.Column(db.Integer, primary_key=True)
-    highbool = db.Column(db.Boolean, default=False)
-    lowbool = db.Column(db.Boolean, default=False)
-    distbool = db.Column(db.Boolean, default=False)
+    db = SQLAlchemy(app)
 
-    def __init__(self, highbool=False, lowbool=False, distbool=False):
-        self.highbool = highbool
-        self.lowbool = lowbool
-        self.distbool = distbool
+    class BoxClicked(db.Model):
+        __tablename__ = 'answers'
+        id = db.Column(db.Integer, primary_key=True)
+        highbool = db.Column(db.Boolean, default=False)
+        lowbool = db.Column(db.Boolean, default=False)
+        distbool = db.Column(db.Boolean, default=False)
+
+        def __init__(self, highbool=False, lowbool=False, distbool=False):
+            self.highbool = highbool
+            self.lowbool = lowbool
+            self.distbool = distbool
 
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+    @app.route('/')
+    def index():
+        return render_template('index.html')
 
-@app.route('/generate_board', methods=['POST'])
-def generate_board():
-    # Fetch values from the database
-    box_clicked = BoxClicked.query.first()
+    @app.route('/generate_board', methods=['POST'])
+    def generate_board():
+        # Fetch values from the database
+        box_clicked = BoxClicked.query.first()
 
-    # Check if the box_clicked object is None
-    if box_clicked is None:
-        # Create a new row with default values
-        box_clicked = BoxClicked(highbool=False, lowbool=False, distbool=False)
-        db.session.add(box_clicked)
-        db.session.commit()
-    
-    highbool = box_clicked.highbool
-    lowbool = box_clicked.lowbool
-    distbool = box_clicked.distbool
+        # Check if the box_clicked object is None
+        if box_clicked is None:
+            # Create a new row with default values
+            box_clicked = BoxClicked(highbool=False, lowbool=False, distbool=False)
+            db.session.add(box_clicked)
+            db.session.commit()
+        
+        highbool = box_clicked.highbool
+        lowbool = box_clicked.lowbool
+        distbool = box_clicked.distbool
 
-    # Clears the spots
-    global gui_spots
-    gui_spots = []
-    # Generate the board
-    new_tiles = generate_fair_board(highbool, lowbool, distbool)
-    BoardImage(new_tiles)
+        # Clears the spots
+        global gui_spots
+        gui_spots = []
+        # Generate the board
+        new_tiles = generate_fair_board(highbool, lowbool, distbool)
+        BoardImage(new_tiles)
 
-    image_path = 'static/generated_image.png'
-    return jsonify({'image_path': image_path})
+        image_path = 'static/generated_image.png'
+        return jsonify({'image_path': image_path})
 
-# Flask route
-@app.route('/update_checkbox', methods=['GET'])
-def update_checkbox():
-    # Get the name and value parameters from the query string
-    name = request.args.get('name')
-    value = request.args.get('value') == 'true'  # Convert the string to a boolean
+    # Flask route
+    @app.route('/update_checkbox', methods=['GET'])
+    def update_checkbox():
+        # Get the name and value parameters from the query string
+        name = request.args.get('name')
+        value = request.args.get('value') == 'true'  # Convert the string to a boolean
 
-    # Fetch the first row from the database
-    box_clicked = BoxClicked.query.first()
+        # Fetch the first row from the database
+        box_clicked = BoxClicked.query.first()
 
-    # Update the corresponding variable based on the checkbox name
-    if name == 'highbool':
-        box_clicked.highbool = value
-    elif name == 'lowbool':
-        box_clicked.lowbool = value
-    elif name == 'distbool':
-        box_clicked.distbool = value
+        # Update the corresponding variable based on the checkbox name
+        if name == 'highbool':
+            box_clicked.highbool = value
+        elif name == 'lowbool':
+            box_clicked.lowbool = value
+        elif name == 'distbool':
+            box_clicked.distbool = value
 
-    # Commit changes to the database
-    db.session.commit()
-
-    # Return a JSON response indicating success
-    return jsonify({'success': True})
-
-if __name__ == '__main__':
-    # Create the database tables before running the app
-    with app.app_context():
-        # Drop existing tables (if any) and create new ones
-        db.drop_all()
-        db.create_all()
-
-        # Create a new row in the 'answers' table with default values
-        new_row = BoxClicked(highbool=False, lowbool=False, distbool=False)
-        db.session.add(new_row)
+        # Commit changes to the database
         db.session.commit()
 
-    # Run the Flask application
-    app.run()
+        # Return a JSON response indicating success
+        return jsonify({'success': True})
+
+    if __name__ == '__main__':
+        # Create the database tables before running the app
+        with app.app_context():
+            # Drop existing tables (if any) and create new ones
+            db.drop_all()
+            db.create_all()
+
+            # Create a new row in the 'answers' table with default values
+            new_row = BoxClicked(highbool=False, lowbool=False, distbool=False)
+            db.session.add(new_row)
+            db.session.commit()
+
+        # Run the Flask application
+        app.run()
