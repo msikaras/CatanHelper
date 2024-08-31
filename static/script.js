@@ -27,9 +27,8 @@ async function processImage() {
             imgElement.id = 'generated-image';
             imgElement.src = `${responseData.image_path}?timestamp=${timestamp}`;
 
-            // Set the width and height to control the size
-            imgElement.style.width = '50%';  // Adjust the percentage as needed
-            imgElement.style.height = 'auto';
+            imgElement.style.maxWidth = '100%';  // Ensure the image fits within the container
+            imgElement.style.height = 'auto';   // Maintain aspect ratio
 
             resultContainer.appendChild(imgElement);
 

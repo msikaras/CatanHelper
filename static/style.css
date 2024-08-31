@@ -4,7 +4,6 @@ body {
     display: flex;
     flex-direction: column; 
     margin: 0;
-
 }
 
 .sub-line {
@@ -22,16 +21,37 @@ body {
 .content {
     font-size: 14px;
     display: flex;
-    flex-direction: row; 
+    flex-direction: column; 
+}
+
+.sets {
+    display: flex;
+    align-items: center;   /* Centers content vertically */
+    justify-content: flex-start;  /* Aligns content to the start horizontally */
+    height: 100%;          /* Ensure the parent container takes full height if needed */
+
+}
+
+.group {
+    display: flex;
+    align-items: flex-start;   /* Centers content vertically */
+    justify-content: flex-start;  /* Aligns content to the start horizontally */
+    flex-direction: column; 
 }
 
 .buttons {
     display: flex;
-    flex-direction: column; 
+    flex-direction: row; 
     border-right: 4px solid #000000; 
     border-left: 4px solid #000000; 
-    padding-right: 0px;
-    padding-bottom: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+    flex-wrap: wrap; /* Allow items to wrap to the next line */
+}
+
+.rank-settings {
+    display: flex;
+    flex-direction: column; 
 }
 
 .checkbox-container {
@@ -40,6 +60,7 @@ body {
     text-align: left;
     margin-left: 10px; 
     margin-bottom: 10px; 
+    margin-top: 10px; 
     font-size: 16px;
 }
 
@@ -77,8 +98,6 @@ body {
     width: 90%;
 }
 
-
-
 #description {
     text-align: left;
     margin-left: 20px; 
@@ -86,11 +105,13 @@ body {
     font-weight: normal;
 }
 
+
 #heading {
     text-align: center;
     background-color: #7fb6c9; 
     color: #000; 
     font-size: 20px; 
+    width: 100%;
 }
 
 #img-container {
@@ -110,7 +131,8 @@ body {
 }
 
 #button-container input[type="file"]{    
-    width: 250px; 
+    width: 100%;  /* Make the input width responsive */
+    max-width: 250px; /* Max width to prevent it from growing too large */
     padding: 12px;
     border: none;
     border-radius: 10px;
@@ -121,7 +143,8 @@ body {
 }
 
 #button-container button {
-    width: 270px;
+    width: 100%;  /* Make the button width responsive */
+    max-width: 270px; /* Max width to prevent it from growing too large */
     height: 47px;  
     padding: 12px;
     border: none;
@@ -131,7 +154,6 @@ body {
     font-size: 16px; 
     cursor: pointer;
 }
-
 
 #img-container h2 {
     display: none; /* Initially hide the h2 */
@@ -143,8 +165,22 @@ body {
 #result-container {
     margin-top: 10px;
     margin-bottom: 20px; 
-    width: auto; /* Set the width to 100% or a specific value */
-    height: auto; /* Set the height to auto or a specific value */
+    overflow: hidden;
 }
 
-
+/* Media Queries for Mobile Devices */
+@media (max-width: 600px) {
+    .buttons {
+        flex-direction: column; /* Stack buttons vertically on small screens */
+    }
+    
+    #button-container input[type="file"],
+    #button-container button {
+        width: 100%;  /* Make buttons and file inputs take full width */
+        max-width: none; /* Remove max-width on small screens */
+    }
+    
+    .checkbox-container {
+        flex-direction: column; /* Stack checkboxes vertically on small screens */
+    }
+}

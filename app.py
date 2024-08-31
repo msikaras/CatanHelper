@@ -56,12 +56,6 @@ adjacencies =[
     [14,15,17]
 ]
 
-highbool = False
-lowbool = False
-distbool = False
-
-
-
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 #   BOARD GENERATOR
 # Generates a random board list
