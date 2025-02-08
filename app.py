@@ -6,11 +6,22 @@ import matplotlib.pyplot as plt
 import math
 import random
 import os
+import traceback
+import uuid
+import glob
 from PIL import Image, ImageDraw, ImageFont
 from flask import Flask, jsonify, request, render_template, send_file, current_app, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+from threading import Lock
+from dotenv import load_dotenv
 
-app = Flask(__name__, static_url_path='/static')
+load_dotenv()
+
+processing_lock = Lock() 
+
+app = Flask(__name__, static_folder='catan-react-frontend/build')
+CORS(app, origins="http://localhost:3000", supports_credentials=True)
 
 board_path = 'training/TestBoard.png'
 tree_path = 'training/TreeNew.png'
@@ -578,8 +589,10 @@ def visualizeProductionRaw(spot_size, draw):
                      fill = (255 - production[i] * 17, production[i] * 17, 0))
     
 
-def BoardImage(new_tiles):
+def BoardImage(new_tiles, output_path):
     print(new_tiles)
+    global gui_spots
+    gui_spots = []  # Reset for each image generation
     side_length = 100
     img = Image.new("RGB", (1200, 1200), "#79d8f2")
     draw = ImageDraw.Draw(img)
@@ -653,7 +666,16 @@ def BoardImage(new_tiles):
     
     placementCoordinates(all_hexagon_vertices, draw)
     spotDrawer(draw)
-    img.save("static/generated_image.png")
+    img.save(output_path)
+
+
+# Remove old generated images from the static directory
+def cleanup_old_images():
+    for file_path in glob.glob('static/generated_*.png'):
+        try:
+            os.remove(file_path)
+        except OSError as e:
+            print(f"Error deleting file {file_path}: {e}")
 
 
 MODE = 'flask'
@@ -663,9 +685,10 @@ MODE = 'flask'
 if MODE == 'cv':
     def main():
         BoardViewer()
-        for i in range( len(tiles)):
-            tiles[i] = tiles[i][2:]
-        BoardImage(tiles)
+        processed_tiles = [tile[2:] for tile in tiles]
+        upload_id = uuid.uuid4().hex  # Generate unique ID
+        output_path = f"static/generated_{upload_id}.png"
+        BoardImage(processed_tiles, output_path)
 
 
     main()
@@ -674,14 +697,17 @@ if MODE == 'cv':
 #   FLASK
 #----------------------------------------------------------------------------------------------------------------------------------------------------------
 else:
-    ENV = 'prod'
+    ENV = os.getenv('ENV', 'prod')  
 
     if ENV == 'dev':
         app.debug = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456@localhost/catandev'
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DEV_DATABASE_URI', 'postgresql://postgres:123456@localhost/catandev')
     else:
         app.debug = False
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://u1rkd3f3ni2947:pfabb712f04b8348fc5bc95eba1f7b388708a308434057e2c21b2e3202c5d97e0@c8lcd8bq1mia7p.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/dcgol2udn1sou5'
+        db_url = os.getenv('DATABASE_URL')
+        if db_url is not None:
+            db_url = db_url.replace("postgres://", "postgresql://")  #heroku formats this differently
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -701,15 +727,18 @@ else:
 
 
     @app.route('/')
-    def index():
-        return render_template('index.html')
+    def serve():
+        return send_from_directory(app.static_folder, 'index.html')
 
+
+    #make new board
     @app.route('/generate_board', methods=['POST'])
     def generate_board():
+        cleanup_old_images() 
+
         # Fetch values from the database
         box_clicked = BoxClicked.query.first()
 
-        # Check if the box_clicked object is None
         if box_clicked is None:
             # Create a new row with default values
             box_clicked = BoxClicked(highbool=False, lowbool=False, distbool=False)
@@ -723,14 +752,74 @@ else:
         # Clears the spots
         global gui_spots
         gui_spots = []
+
+        # unique output path
+        upload_id = uuid.uuid4().hex
+        output_path = f'static/generated_{upload_id}.png'
+
         # Generate the board
         new_tiles = generate_fair_board(highbool, lowbool, distbool)
-        BoardImage(new_tiles)
+        BoardImage(new_tiles, output_path)  # Add output_path parameter
 
-        image_path = 'static/generated_image.png'
-        return jsonify({'image_path': image_path})
+        return jsonify({'image_path': output_path})
 
-    # Flask route
+    @app.route('/upload_board', methods=['POST'])
+    def upload_board():
+        cleanup_old_images() 
+
+        global tiles
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image provided'}), 400
+
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+
+        upload_id = uuid.uuid4().hex
+        temp_path = f'training/temp_{upload_id}.png'
+        output_path = f'static/generated_{upload_id}.png'
+        error = None
+
+        try:
+            os.makedirs('training', exist_ok=True)
+            os.makedirs('static', exist_ok=True)
+            
+            file.save(temp_path)
+            
+            # Proper image validation
+            img_array = cv2.imread(temp_path)
+            if img_array is None or img_array.size == 0:
+                raise ValueError("Invalid or corrupted image file")
+
+            with processing_lock:
+                if os.path.exists(board_path):
+                    os.remove(board_path)
+                os.rename(temp_path, board_path)
+                
+                tiles = []
+                BoardViewer()
+                
+                # tile validation
+                if not tiles or any(len(tile) < 4 for tile in tiles):
+                    raise ValueError("Could not detect valid board structure")
+
+                processed_tiles = [tile[2:] for tile in tiles]
+                BoardImage(processed_tiles, output_path)
+
+            return jsonify({'success': True, 'image_path': output_path})
+
+        except Exception as e:
+            error = "Unable to analyze board image. Please ensure you're using a clear image of a Catan board."
+            print(f"Upload error: {str(e)}")
+            for path in [temp_path, output_path]:
+                if path and os.path.exists(path):
+                    os.remove(path)
+            return jsonify({'error': error}), 400
+        finally:
+            with processing_lock:
+                tiles = []
+    
+        
     @app.route('/update_checkbox', methods=['GET'])
     def update_checkbox():
         # Get the name and value parameters from the query string
@@ -753,7 +842,7 @@ else:
 
         # Return a JSON response indicating success
         return jsonify({'success': True})
-
+    
     if __name__ == '__main__':
         # Create the database tables before running the app
         with app.app_context():
