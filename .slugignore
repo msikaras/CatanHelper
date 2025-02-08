@@ -1,5 +1,11 @@
-.git
-tests
-__pycache__
-*.log
-node_modules  
+# .slugignore
+
+client/
+node_modules/
+public/
+src/
+
+__pycache__/
+*.pyc
+
+.git/
