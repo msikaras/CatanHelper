@@ -1,9 +1,8 @@
 Flask==3.1.0
-Flask_Cors==5.0.0
+Flask-Cors==5.0.0
 flask_sqlalchemy==3.1.1
 matplotlib==3.8.2
 numpy==2.2.2
 opencv_python==4.9.0.80
 opencv_python_headless==4.9.0.80
-Pillow==10.1.0
 Pillow==11.1.0
