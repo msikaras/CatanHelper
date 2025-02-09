@@ -19,7 +19,7 @@ const UploadContainer = () => {
     try {
       const baseUrl = process.env.NODE_ENV === 'development' 
         ? 'http://localhost:5000' 
-        : '';
+        : 'https://catan-helper-c550e7296f26.herokuapp.com/';
       
       const response = await fetch(`${baseUrl}/upload_board`, {
         method: 'POST',
@@ -34,7 +34,8 @@ const UploadContainer = () => {
       }
   
       if (data.success && data.image_path) {
-        setAnalyzedBoard(`${baseUrl}/${data.image_path}?t=${Date.now()}`);
+        const imagePath = data.image_path.startsWith('/') ? data.image_path : `/${data.image_path}`;
+        setAnalyzedBoard(`${baseUrl}${imagePath}?t=${Date.now()}`);
       }
     } catch (err) {
       console.error('Upload error:', err);

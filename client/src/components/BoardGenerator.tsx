@@ -9,7 +9,7 @@ const BoardGenerator: React.FC<BoardGeneratorProps> = ({ setImagePath, setIsLoad
   const handleGenerateBoard = async () => {
     try {
       setIsLoading(true);
-      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://catan-helper-c550e7296f26.herokuapp.com/';
       const response = await fetch('/generate_board', {
         method: 'POST',
         headers: {

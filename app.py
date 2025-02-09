@@ -20,8 +20,10 @@ load_dotenv()
 
 processing_lock = Lock() 
 
-app = Flask(__name__, static_folder='catan-react-frontend/build')
-CORS(app, origins="http://localhost:3000", supports_credentials=True)
+from flask_cors import CORS
+
+app = Flask(__name__, static_folder='client/build', static_url_path='/')
+CORS(app, resources={r"/*": {"origins": "*"}}) 
 
 board_path = 'training/TestBoard.png'
 tree_path = 'training/TreeNew.png'
@@ -701,7 +703,7 @@ else:
 
     if ENV == 'dev':
         app.debug = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DEV_DATABASE_URI', 'postgresql://postgres:123456@localhost/catandev')
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DEV_DATABASE_URI')  # No hardcoded fallback
     else:
         app.debug = False
         db_url = os.getenv('DATABASE_URL')
@@ -730,6 +732,9 @@ else:
     def serve():
         return send_from_directory(app.static_folder, 'index.html')
 
+    @app.errorhandler(404)
+    def not_found(e):
+        return send_from_directory(app.static_folder, 'index.html')
 
     #make new board
     @app.route('/generate_board', methods=['POST'])
@@ -856,4 +861,5 @@ else:
             db.session.commit()
 
         # Run the Flask application
-        app.run()
+        app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+

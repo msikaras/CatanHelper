@@ -12,14 +12,18 @@ const checkboxesConfig = [
 const GenerateContainer: React.FC = () => {
   const [sliderValue, setSliderValue] = useState<number>(2); // Default value for the slider
 
+  const baseUrl = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:5000' 
+  : 'https://catan-helper-c550e7296f26.herokuapp.com/';
+
   const updateCheckbox = (name: string, value: boolean) => {
-    fetch(`/update_checkbox?name=${name}&value=${value}`, { method: 'GET' });
+    fetch(`${baseUrl}/update_checkbox?name=${name}&value=${value}`, { method: 'GET' });
   };
 
   const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
     setSliderValue(value);
-    fetch(`/update_slider?name=priority&value=${value}`, { method: 'GET' });
+    fetch(`${baseUrl}/update_slider?name=priority&value=${value}`, { method: 'GET' });
   };
 
   return (
